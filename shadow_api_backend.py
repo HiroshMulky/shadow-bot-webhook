@@ -48,5 +48,6 @@ telegram_app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_
 @app.post("/webhook")
 async def telegram_webhook(req: Request):
     data = await req.json()
+    print("🛸 Incoming Telegram webhook data:", data)  # ✅ Debug line
     await telegram_app.update_queue.put(Update.de_json(data, telegram_app.bot))
     return {"status": "ok"}
