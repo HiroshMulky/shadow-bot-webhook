@@ -88,7 +88,7 @@ async def scan_url(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(content)
         return
 
-    prompt = f"{GOD_PROMPT}
+    prompt = GOD_PROMPT + f"\n\nTarget: {url}\n\nTitle: {title}\n\nContent:\n{content}"
 
 Target: {url}
 
