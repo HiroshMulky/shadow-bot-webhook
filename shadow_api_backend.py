@@ -23,12 +23,18 @@ GOD_PROMPT = (
 telegram_app = ApplicationBuilder().token(BOT_TOKEN).build()
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print("🔍 Entered handle_message()")  # ✅ Step 1
+
     user_id = update.effective_user.id
+    print("🧾 From Telegram user ID:", user_id)  # ✅ Step 2
+
     if user_id != AUTHORIZED_USER_ID:
-        await update.message.reply_text("Access denied.")
+        print("⛔ Unauthorized user — ignoring.")  # ✅ Step 3
         return
 
     user_input = update.message.text
+    print("📨 Message content:", user_input)  # ✅ Step 4
+
     try:
         completion = client.chat.completions.create(
             model="gpt-3.5-turbo",
@@ -38,12 +44,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             ]
         )
         response = completion.choices[0].message.content
+        print("📤 SHADOW's response:", response)  # ✅ Step 5
     except Exception as e:
         response = f"SHADOW encountered an error: {str(e)}"
+        print("🔥 OpenAI API error:", str(e))  # ✅ Step 6
 
     await update.message.reply_text(response)
-
-telegram_app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
 @app.post("/webhook")
 async def telegram_webhook(req: Request):
