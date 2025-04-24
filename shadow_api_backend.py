@@ -54,6 +54,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 @app.post("/webhook")
 async def telegram_webhook(req: Request):
     data = await req.json()
-    print("🛸 Incoming Telegram webhook data:", data)  # ✅ Debug line
-    await telegram_app.update_queue.put(Update.de_json(data, telegram_app.bot))
+    print("🛸 Incoming Telegram webhook data:", data)
+
+    if not telegram_app.bot:
+        print("⚙️ Initializing Telegram bot...")
+        await telegram_app.initialize()
+
+    update = Update.de_json(data, telegram_app.bot)
+    await telegram_app.process_update(update)
     return {"status": "ok"}
