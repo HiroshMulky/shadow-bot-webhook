@@ -22,18 +22,19 @@ GOD_PROMPT = (
 
 telegram_app = ApplicationBuilder().token(BOT_TOKEN).build()
 
+# 🧠 Register message handler
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    print("🔍 Entered handle_message()")  # ✅ Step 1
+    print("🔍 Entered handle_message()")
 
     user_id = update.effective_user.id
-    print("🧾 From Telegram user ID:", user_id)  # ✅ Step 2
+    print("🧾 Telegram ID:", user_id)
 
     if user_id != AUTHORIZED_USER_ID:
-        print("⛔ Unauthorized user — ignoring.")  # ✅ Step 3
+        print("⛔ Unauthorized user")
         return
 
     user_input = update.message.text
-    print("📨 Message content:", user_input)  # ✅ Step 4
+    print("📨 Message content:", user_input)
 
     try:
         completion = client.chat.completions.create(
@@ -44,22 +45,26 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             ]
         )
         response = completion.choices[0].message.content
-        print("📤 SHADOW's response:", response)  # ✅ Step 5
+        print("📤 SHADOW's response:", response)
     except Exception as e:
         response = f"SHADOW encountered an error: {str(e)}"
-        print("🔥 OpenAI API error:", str(e))  # ✅ Step 6
+        print("🔥 OpenAI Error:", str(e))
 
     await update.message.reply_text(response)
 
+telegram_app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+
+# ✅ Run initialization once when FastAPI boots
+@app.on_event("startup")
+async def startup_event():
+    print("⚙️ Initializing Telegram bot...")
+    await telegram_app.initialize()
+    print("✅ Telegram bot initialized")
+
+# ✅ Telegram webhook route
 @app.post("/webhook")
 async def telegram_webhook(req: Request):
     data = await req.json()
-    print("🛸 Incoming Telegram webhook data:", data)
-
-    if not telegram_app.bot:
-        print("⚙️ Initializing Telegram bot...")
-        await telegram_app.initialize()
-
     update = Update.de_json(data, telegram_app.bot)
     await telegram_app.process_update(update)
     return {"status": "ok"}
