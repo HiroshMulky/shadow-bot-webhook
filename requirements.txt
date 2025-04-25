@@ -3,5 +3,9 @@ python-telegram-bot==20.7
 openai==1.13.3
 python-dotenv==1.0.1
 uvicorn
-requests
-beautifulsoup4
+PyPDF2
+python-docx
+pandas
+openpyxl
+pillow
+pytesseract
