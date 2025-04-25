@@ -64,10 +64,11 @@ def crawl_url(url, depth=2, visited=None):
 async def crawl_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if user_id != AUTHORIZED_USER_ID:
+        await update.message.reply_text("Access denied.")
         return
 
-    if not context.args:
-        await update.message.reply_text("Please provide a URL to crawl.")
+    if not context.args or not context.args[0].startswith("http"):
+        await update.message.reply_text("Please provide a valid URL. Example: /crawl https://example.com")
         return
 
     target_url = context.args[0]
@@ -79,7 +80,19 @@ async def crawl_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(extracted_text)
         return
 
-    prompt = GOD_PROMPT + f"\n\nExtracted web content:\n{extracted_text}\n\nSummarize this webpage with key takeaways, strategic intel, and any actionable data."
+    prompt = f"""{GOD_PROMPT}
+
+Web Intel Target: {target_url}
+
+Extracted Content:
+{extracted_text}
+
+🎯 Generate an intelligence brief with the following sections:
+1. Tactical Summary
+2. Risk Assessment
+3. Opportunity Matrix
+4. Actionable Next Steps
+"""
 
     try:
         completion = client.chat.completions.create(
@@ -97,7 +110,7 @@ telegram_app.add_handler(CommandHandler("crawl", crawl_command))
 @app.on_event("startup")
 async def startup_event():
     await telegram_app.initialize()
-    print("✅ SHADOW WebCrawler initialized.")
+    print("✅ SHADOW WebCrawler v1.1 initialized.")
 
 @app.post("/webhook")
 async def telegram_webhook(req: Request):
